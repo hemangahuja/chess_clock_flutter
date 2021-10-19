@@ -23,7 +23,7 @@ class _ClockState extends State<Clock> {
   int seconds = 0;
 
   void changeSeconds(String time){
-    print(seconds);
+
     setState(() {
       seconds = int.parse(time);
     });
@@ -96,7 +96,7 @@ class _CounterState extends State<Counter> {
     setState(() {
       max = widget.max;
     });
-    print('counter variableis $max');
+
     bool isRunning = timer == null ? false : timer!.isActive;
 
     return SizedBox(
