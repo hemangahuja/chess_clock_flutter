@@ -19,8 +19,9 @@ class _ClockState extends State<Clock> {
   int seconds = 0;
 
   void changeSeconds(String time) {
-    WidgetsBinding.instance!
-        .addPostFrameCallback((_) => setState(() { seconds = int.parse(time);}));
+    WidgetsBinding.instance!.addPostFrameCallback((_) => setState(() {
+          seconds = int.parse(time);
+        }));
   }
 
   @override
@@ -32,23 +33,16 @@ class _ClockState extends State<Clock> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                TextField(
-                  onSubmitted: changeSeconds,
-                ),
-                Counter(reversed: false, max: seconds),
-                Counter(
-                  reversed: true,
-                  max: seconds,
-                )
+                Input(setTime: changeSeconds),
+                Counter( max : seconds)
               ],
             )));
   }
 }
 
 class Counter extends StatefulWidget {
-  final bool reversed;
   final int max;
-  const Counter({Key? key, this.reversed = false, this.max = 0})
+  const Counter({Key? key, this.max = 0})
       : super(key: key);
 
   @override
@@ -57,74 +51,127 @@ class Counter extends StatefulWidget {
 
 class _CounterState extends State<Counter> {
   late int max;
-  late int seconds = max;
-  Timer? timer;
-  void startTimer({bool reset = true}) {
+  late int seconds1 = max;
+  late int seconds2 = max;
+  Timer? timer1;
+  Timer? timer2;
+  bool ?start;
+  bool ?isrunning;
+  @override
+  void initState() {
+    super.initState();
+    start = true;
+    isrunning = true;
+  }
+  void startTimer1({bool reset = true}) {
     if (reset) {
-      resetTimer();
+      resetTimer1();
     }
-    timer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      if (seconds > 0) {
+    timer1 = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (seconds1 > 0) {
         setState(() {
-          seconds--;
+          seconds1--;
         });
       } else {
-        timer.cancel();
+        timer1!.cancel();
       }
     });
   }
 
-  void stopTimer({reset = false}) {
+  void stopTimer1({reset = false}) {
     if (reset) {
-      resetTimer();
+      resetTimer1();
     }
-    timer?.cancel();
+    timer1?.cancel();
   }
 
-  void resetTimer() {
+  void resetTimer1() {
     setState(() {
-      seconds = max;
+      seconds1 = max;
+    });
+  }
+  void startTimer2({bool reset = true}) {
+    if (reset) {
+      resetTimer2();
+    }
+    timer2 = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (seconds2 > 0) {
+        setState(() {
+          seconds2--;
+        });
+      } else {
+        timer2!.cancel();
+      }
     });
   }
 
+  void stopTimer2({reset = false}) {
+    if (reset) {
+      resetTimer2();
+    }
+    timer2?.cancel();
+  }
+
+  void resetTimer2() {
+    setState(() {
+      seconds2 = max;
+    });
+  }
   @override
   Widget build(BuildContext context) {
     setState(() {
       max = widget.max;
     });
 
-    bool isRunning = timer == null ? false : timer!.isActive;
-
+    
+    
     return SizedBox(
       height: 100,
       width: 100,
       child: TextButton(
           onPressed: () {
-            if (isRunning) {
-              stopTimer(reset: false);
-            } else {
-              startTimer(reset: seconds == 0);
+
+            if(start!){
+              startTimer1();
+              setState(() {
+                start = false;
+              });
             }
-            isRunning = !isRunning;
+            else if (isrunning!) {
+              stopTimer1(reset: false);
+              startTimer2(reset: seconds2 == 0);
+              setState(() {
+                isrunning = !isrunning!;
+              });
+            } else {
+              startTimer1(reset: seconds1 == 0);
+              stopTimer2(reset: false);
+              setState(() {
+                isrunning = !isrunning!;
+              });
+            }         
           },
           child: Center(
-            child: Container(
-              alignment: Alignment.center,
-              color: Colors.white,
-              width: double.infinity,
-              height: 100,
-              child: widget.reversed
-                  ? Text(
-                      '$seconds',
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [Text(
+                      '$seconds1',
                       style: const TextStyle(
                         fontSize: 30,
                       ),
                       textAlign: TextAlign.center,
-                    )
-                  : FlipedText(
-                      text: '$seconds',
                     ),
-            ),
+                    Text(
+                      '$seconds2',
+                      style: const TextStyle(
+                        fontSize: 30,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                ])
+
+            ,
           )),
     );
   }
@@ -172,7 +219,7 @@ class _InputState extends State<Input> {
 
   @override
   Widget build(BuildContext context) {
-       return Row(
+    return Row(
       children: [
         SizedBox(
           width: 30,
@@ -184,10 +231,12 @@ class _InputState extends State<Input> {
           ),
         ),
         ElevatedButton(
-            onPressed: widget.setTime(myController.text),
+            onPressed: pressed,
             child: const Text('okay'))
       ],
     );
   }
-
+  void pressed(){
+    widget.setTime(myController.text);
+  }
 }
