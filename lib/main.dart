@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
-
+import 'package:flutter/services.dart';
 
 void main() {
   runApp(const Clock());
@@ -19,9 +19,8 @@ class _ClockState extends State<Clock> {
   int seconds = 0;
 
   void changeSeconds(String time) {
-    setState(() {
-      seconds = int.parse(time);
-    });
+    WidgetsBinding.instance!
+        .addPostFrameCallback((_) => setState(() { seconds = int.parse(time);}));
   }
 
   @override
@@ -151,4 +150,44 @@ class FlipedText extends StatelessWidget {
       ),
     );
   }
+}
+
+class Input extends StatefulWidget {
+  final Function setTime;
+  const Input({Key? key, required this.setTime}) : super(key: key);
+
+  @override
+  _InputState createState() => _InputState();
+}
+
+class _InputState extends State<Input> {
+  final myController = TextEditingController(text: '0');
+
+  @override
+  void dispose() {
+    // Clean up the controller when the widget is disposed.
+    myController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+       return Row(
+      children: [
+        SizedBox(
+          width: 30,
+          height: 30,
+          child: TextFormField(
+            controller: myController,
+            keyboardType: TextInputType.number,
+            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+          ),
+        ),
+        ElevatedButton(
+            onPressed: widget.setTime(myController.text),
+            child: const Text('okay'))
+      ],
+    );
+  }
+
 }
